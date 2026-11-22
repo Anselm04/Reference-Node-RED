@@ -1,0 +1,3 @@
+Upstream: https://github.com/node-red/node-red
+Upstream commit: f613ba109eff360a1c8f8cb9add7b39531c75f12
+Source imported with upstream Git ancestry. Upstream Actions workflows excluded from the working tree due to GitHub token permissions.

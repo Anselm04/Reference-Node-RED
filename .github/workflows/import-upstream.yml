@@ -32,7 +32,7 @@ jobs:
           git rm -r --ignore-unmatch .
           git checkout "$UPSTREAM_SHA" -- .
           # GitHub's default Actions token cannot create/update upstream workflow files.
-          git rm -r --ignore-unmatch .github/workflows
+          git rm -rf --ignore-unmatch .github/workflows
           mkdir -p .github/workflows .trillionai-reference
           cp /tmp/trillionai-import-workflow.yml .github/workflows/import-upstream.yml
           printf 'Upstream: https://github.com/node-red/node-red\nUpstream commit: %s\nSource imported with upstream Git ancestry. Upstream Actions workflows excluded from the working tree due to GitHub token permissions.\n' "$UPSTREAM_SHA" > .trillionai-reference/SOURCE.txt

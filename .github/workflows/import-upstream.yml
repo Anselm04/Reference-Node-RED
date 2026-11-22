@@ -1,0 +1,43 @@
+name: Import Node-RED upstream source
+on:
+  push:
+    paths:
+      - '.github/workflows/import-upstream.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: upstream-source-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Import upstream repository preserving history and licences
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/node-red/node-red.git
+          git fetch upstream main
+          UPSTREAM_SHA="$(git rev-parse FETCH_HEAD)"
+          cp .github/workflows/import-upstream.yml /tmp/trillionai-import-workflow.yml
+          git merge --allow-unrelated-histories -s ours --no-edit "$UPSTREAM_SHA"
+          git rm -r --ignore-unmatch .
+          git checkout "$UPSTREAM_SHA" -- .
+          # GitHub's default Actions token cannot create/update upstream workflow files.
+          git rm -r --ignore-unmatch .github/workflows
+          mkdir -p .github/workflows .trillionai-reference
+          cp /tmp/trillionai-import-workflow.yml .github/workflows/import-upstream.yml
+          printf 'Upstream: https://github.com/node-red/node-red\nUpstream commit: %s\nSource imported with upstream Git ancestry. Upstream Actions workflows excluded from the working tree due to GitHub token permissions.\n' "$UPSTREAM_SHA" > .trillionai-reference/SOURCE.txt
+          test -f LICENSE
+          test -d packages
+          git add -A
+          git commit -m "docs: import Node-RED upstream source at $UPSTREAM_SHA"
+          git push origin HEAD:main
